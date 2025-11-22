@@ -57,8 +57,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">Good Morning</h1>
-        <p className="text-slate-600 mt-2">Welcome to your inventory dashboard</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight text-balance">Good Morning</h1>
+        <p className="text-gray-600 mt-2">Welcome to your inventory dashboard</p>
       </div>
 
       {/* KPI Cards */}
@@ -76,23 +76,23 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 </div>
                 {kpi.trend && <span className="text-sm font-semibold text-emerald-600">{kpi.trend}</span>}
               </div>
-              <p className="text-sm font-medium text-slate-600">{kpi.title}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{kpi.value}</p>
-              {kpi.subtext && <p className="text-xs text-slate-500 mt-2">{kpi.subtext}</p>}
+              <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{kpi.value}</p>
+              {kpi.subtext && <p className="text-xs text-gray-500 mt-2">{kpi.subtext}</p>}
             </div>
           )
         })}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900 mb-4">Quick Actions</h2>
+      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="flex flex-col sm:flex-row gap-3">
           {quickActions.map((action, idx) => (
             <button
               key={idx}
               onClick={action.action}
-              className="flex-1 h-11 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-11 bg-[#714B67] hover:bg-[#5A3D57] text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <Plus size={20} />
               {action.label}
@@ -103,22 +103,22 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900 mb-6">Stock Moves per Week</h2>
+        <div className="lg:col-span-2 bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Stock Moves per Week</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="week" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0" }} />
-              <Bar dataKey="moves" fill="#0d9488" radius={[8, 8, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="week" stroke="#6b7280" />
+              <YAxis stroke="#6b7280" />
+              <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e5e7eb" }} />
+              <Bar dataKey="moves" fill="#714B67" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h2>
+        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {[
               { action: "Receipt Validated", time: "2 hours ago", icon: Truck },
@@ -127,13 +127,13 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             ].map((activity, idx) => {
               const Icon = activity.icon
               return (
-                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-slate-200 last:border-0">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Icon size={16} className="text-slate-600" />
+                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-200 last:border-0">
+                  <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
+                    <Icon size={16} className="text-[#714B67]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900">{activity.action}</p>
-                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                       <Clock size={12} />
                       {activity.time}
                     </p>

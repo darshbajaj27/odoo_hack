@@ -39,14 +39,14 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
   return (
     <>
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 h-16">
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 h-16 shadow-sm">
         <div className="flex items-center justify-between h-full px-6">
           {/* Left Section - Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-700 to-purple-900 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
               SM
             </div>
-            <span className="text-lg font-semibold text-slate-900 hidden sm:inline">StockMaster</span>
+            <span className="text-lg font-semibold text-gray-900 hidden sm:inline">StockMaster</span>
           </div>
 
           {/* Center Section - Main Menu (Desktop) */}
@@ -56,8 +56,8 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               onClick={() => handleNavigate("dashboard")}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive("dashboard")
-                  ? "text-teal-700 bg-teal-50 border-b-2 border-teal-700"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  ? "text-[#714B67] bg-purple-50 border-b-2 border-[#714B67]"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
               aria-current={isActive("dashboard") ? "page" : undefined}
             >
@@ -73,8 +73,8 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               <button
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   desktopOperationsHover
-                    ? "text-teal-700 bg-teal-50"
-                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    ? "text-[#714B67] bg-purple-50"
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                 }`}
               >
                 Operations
@@ -82,12 +82,12 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               </button>
               {/* Dropdown Menu */}
               {desktopOperationsHover && (
-                <div className="absolute top-full left-0 mt-0 w-56 bg-white border border-slate-200 rounded-md shadow-lg py-2">
+                <div className="absolute top-full left-0 mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg py-2">
                   {operationsItems.map((item) => (
                     <button
                       key={item.label}
                       onClick={() => handleNavigate(item.view)}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#714B67] transition-colors"
                     >
                       {item.label}
                     </button>
@@ -101,8 +101,8 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               onClick={() => handleNavigate("products")}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive("products")
-                  ? "text-teal-700 bg-teal-50 border-b-2 border-teal-700"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  ? "text-[#714B67] bg-purple-50 border-b-2 border-[#714B67]"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
               aria-current={isActive("products") ? "page" : undefined}
             >
@@ -114,8 +114,8 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               onClick={() => handleNavigate("move-history")}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive("move-history")
-                  ? "text-teal-700 bg-teal-50 border-b-2 border-teal-700"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  ? "text-[#714B67] bg-purple-50 border-b-2 border-[#714B67]"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
               aria-current={isActive("move-history") ? "page" : undefined}
             >
@@ -127,8 +127,8 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               onClick={() => handleNavigate("settings")}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive("settings")
-                  ? "text-teal-700 bg-teal-50 border-b-2 border-teal-700"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  ? "text-[#714B67] bg-purple-50 border-b-2 border-[#714B67]"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
               aria-current={isActive("settings") ? "page" : undefined}
             >
@@ -140,7 +140,7 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
           <div className="flex items-center gap-4 ml-auto">
             {/* Desktop Profile */}
             <div className="hidden sm:flex items-center gap-3">
-              <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white font-medium cursor-pointer hover:bg-teal-700 transition-colors">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center text-white font-medium cursor-pointer hover:from-indigo-700 hover:to-purple-800 transition-all">
                 {userName.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -148,14 +148,14 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
             {/* Mobile Profile */}
-            <div className="md:hidden w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white font-medium cursor-pointer hover:bg-teal-700 transition-colors">
+            <div className="md:hidden w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center text-white font-medium cursor-pointer hover:from-indigo-700 hover:to-purple-800 transition-all">
               {userName.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -167,13 +167,13 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
         <>
           {/* Overlay */}
           <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-slate-200 md:hidden shadow-lg">
+          <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-200 md:hidden shadow-lg">
             <div className="p-4 space-y-2">
               {/* Dashboard */}
               <button
                 onClick={() => handleNavigate("dashboard")}
                 className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive("dashboard") ? "text-teal-700 bg-teal-50" : "text-slate-700 hover:bg-slate-100"
+                  isActive("dashboard") ? "text-[#714B67] bg-purple-50" : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 Dashboard
@@ -183,7 +183,7 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               <div>
                 <button
                   onClick={() => setOperationsDropdownOpen(!operationsDropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                 >
                   Operations
                   <ChevronDown size={16} className={operationsDropdownOpen ? "rotate-180" : ""} />
@@ -194,7 +194,7 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
                       <button
                         key={item.label}
                         onClick={() => handleNavigate(item.view)}
-                        className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-md transition-colors"
                       >
                         {item.label}
                       </button>
@@ -207,7 +207,7 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               <button
                 onClick={() => handleNavigate("products")}
                 className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive("products") ? "text-teal-700 bg-teal-50" : "text-slate-700 hover:bg-slate-100"
+                  isActive("products") ? "text-[#714B67] bg-purple-50" : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 Stock
@@ -217,7 +217,7 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               <button
                 onClick={() => handleNavigate("move-history")}
                 className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive("move-history") ? "text-teal-700 bg-teal-50" : "text-slate-700 hover:bg-slate-100"
+                  isActive("move-history") ? "text-[#714B67] bg-purple-50" : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 Move History
@@ -227,16 +227,16 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
               <button
                 onClick={() => handleNavigate("settings")}
                 className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive("settings") ? "text-teal-700 bg-teal-50" : "text-slate-700 hover:bg-slate-100"
+                  isActive("settings") ? "text-[#714B67] bg-purple-50" : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 Settings
               </button>
 
-              <div className="pt-4 mt-4 border-t border-slate-200">
+              <div className="pt-4 mt-4 border-t border-gray-200">
                 <button
                   onClick={onLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                 >
                   <LogOut size={18} />
                   Logout

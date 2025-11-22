@@ -11,6 +11,15 @@ import { ProductManagement } from "./views/product-management"
 import { MoveHistory } from "./views/move-history"
 import { Settings } from "./views/settings"
 
+// Historical average velocity data for products (quantity per month)
+const historicalProductData = [
+  { id: 1, sku: "SKU-001", name: "Steel Rods 12mm", avgMonthlyVelocity: 120, category: "Raw Materials" },
+  { id: 2, sku: "SKU-002", name: "Concrete Mix 40kg", avgMonthlyVelocity: 80, category: "Raw Materials" },
+  { id: 3, sku: "SKU-003", name: "Rebar 16mm", avgMonthlyVelocity: 50, category: "Raw Materials" },
+  { id: 4, sku: "SKU-004", name: "Azure Interior Panels", avgMonthlyVelocity: 30, category: "Components" },
+  { id: 5, sku: "SKU-005", name: "Fasteners Box", avgMonthlyVelocity: 200, category: "Components" },
+]
+
 export function StockMasterApp() {
   const [currentView, setCurrentView] = useState<string>("auth")
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -43,7 +52,7 @@ export function StockMasterApp() {
       case "detail":
         return <OperationDetailView operationId={selectedOperationId} onNavigate={handleNavigate} />
       case "products":
-        return <ProductManagement onNavigate={handleNavigate} />
+        return <ProductManagement onNavigate={handleNavigate} historicalData={historicalProductData} />
       case "move-history":
         return <MoveHistory onNavigate={handleNavigate} />
       case "settings":
@@ -58,7 +67,7 @@ export function StockMasterApp() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-gray-50">
       {/* Top Navigation */}
       <TopNavigation
         currentView={currentView}
