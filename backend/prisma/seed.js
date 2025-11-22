@@ -6,7 +6,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Starting seed...');
 
-  // Clear existing data
+  // Clear existing data (Order matters due to Foreign Keys)
+  // It is often safer to use transaction or ensure cascade delete in schema, 
+  // but manual ordering works here.
+  await prisma.stockItem.deleteMany();
+  await prisma.operationLine.deleteMany();
   await prisma.operation.deleteMany();
   await prisma.product.deleteMany();
   await prisma.location.deleteMany();
@@ -14,161 +18,77 @@ async function main() {
   await prisma.contact.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create default admin user
-  const adminUser = await prisma.user.create({
+  // Create Users
+  const hashedPassword = await bcrypt.hash('password123', 10);
+
+  await prisma.user.create({
     data: {
       email: 'admin@stockmaster.com',
-      password: await bcrypt.hash('Admin@123', 10),
-      firstName: 'Admin',
-      lastName: 'User',
-      phone: '+1234567890',
-      role: 'ADMIN',
-      isActive: true,
+      password: hashedPassword,
+      name: 'Admin User',
+      role: 'MANAGER',
+      status: 'ACTIVE',
     },
   });
 
-  console.log('Created admin user:', adminUser.id);
-
-  // Create demo user
-  const demoUser = await prisma.user.create({
-    data: {
-      email: 'user@stockmaster.com',
-      password: await bcrypt.hash('User@123', 10),
-      firstName: 'Demo',
-      lastName: 'User',
-      phone: '+0987654321',
-      role: 'USER',
-      isActive: true,
-    },
+  // Create Locations (Required for Operations)
+  // 1. Vendor Location (Virtual)
+  const vendorLoc = await prisma.location.create({
+    data: { name: 'Vendor Location', type: 'VENDOR' }
   });
 
-  console.log('Created demo user:', demoUser.id);
+  // 2. Customer Location (Virtual)
+  const customerLoc = await prisma.location.create({
+    data: { name: 'Customer Location', type: 'CUSTOMER' }
+  });
 
-  // Create warehouses
-  const warehouse1 = await prisma.warehouse.create({
+  // 3. Inventory Loss (Virtual)
+  await prisma.location.create({
+    data: { name: 'Inventory Adjustment', type: 'INVENTORY_LOSS' }
+  });
+
+  // 4. Internal Warehouse
+  const warehouse = await prisma.warehouse.create({
     data: {
       name: 'Main Warehouse',
-      code: 'WH-001',
-      address: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-      isActive: true,
+      shortCode: 'WH-MAIN',
+      address: '123 Tech Street',
     },
   });
 
-  const warehouse2 = await prisma.warehouse.create({
+  const stockLoc = await prisma.location.create({
     data: {
-      name: 'Regional Warehouse',
-      code: 'WH-002',
-      address: '456 Oak Ave',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90001',
-      country: 'USA',
-      isActive: true,
-    },
+      name: 'WH/Stock',
+      type: 'INTERNAL',
+      parentWarehouseId: warehouse.id
+    }
   });
 
-  console.log('Created warehouses');
+  console.log('Created Locations');
 
-  // Create locations
-  const location1 = await prisma.location.create({
+  // Create Products (Start with 0 stock)
+  await prisma.product.create({
     data: {
-      name: 'Aisle A - Rack 1',
-      code: 'LOC-A1-R1',
-      warehouseId: warehouse1.id,
-      aisle: 'A',
-      rack: '1',
-      shelf: '1',
-      isActive: true,
-    },
-  });
-
-  const location2 = await prisma.location.create({
-    data: {
-      name: 'Aisle B - Rack 2',
-      code: 'LOC-B2-R2',
-      warehouseId: warehouse1.id,
-      aisle: 'B',
-      rack: '2',
-      shelf: '1',
-      isActive: true,
-    },
-  });
-
-  const location3 = await prisma.location.create({
-    data: {
-      name: 'Storage - Zone 1',
-      code: 'LOC-Z1',
-      warehouseId: warehouse2.id,
-      aisle: 'C',
-      rack: '1',
-      shelf: '1',
-      isActive: true,
-    },
-  });
-
-  console.log('Created locations');
-
-  // Create products
-  const product1 = await prisma.product.create({
-    data: {
-      name: 'Laptop',
-      sku: 'PROD-001',
-      description: 'High-performance laptop',
+      name: 'Laptop Pro',
+      sku: 'LAP-001',
       category: 'Electronics',
-      price: 1299.99,
-      quantity: 50,
-      reorderLevel: 10,
-      isActive: true,
+      sellingPrice: 1200.00,
+      onHand: 0
     },
   });
 
-  const product2 = await prisma.product.create({
+  await prisma.product.create({
     data: {
-      name: 'Mouse',
-      sku: 'PROD-002',
-      description: 'Wireless mouse',
+      name: 'Wireless Mouse',
+      sku: 'ACC-002',
       category: 'Accessories',
-      price: 29.99,
-      quantity: 200,
-      reorderLevel: 50,
-      isActive: true,
+      sellingPrice: 25.00,
+      onHand: 0
     },
   });
 
-  const product3 = await prisma.product.create({
-    data: {
-      name: 'Keyboard',
-      sku: 'PROD-003',
-      description: 'Mechanical keyboard',
-      category: 'Accessories',
-      price: 89.99,
-      quantity: 100,
-      reorderLevel: 20,
-      isActive: true,
-    },
-  });
-
-  console.log('Created products');
-
-  // Create contacts
-  await prisma.contact.create({
-    data: {
-      name: 'TechSupply Inc',
-      email: 'contact@techsupply.com',
-      phone: '+1234567890',
-      company: 'TechSupply Inc',
-      type: 'SUPPLIER',
-      isActive: true,
-    },
-  });
-
-  console.log('Created contacts');
-
-  console.log('Seed completed successfully!');
+  console.log('Created Products (Zero Stock)');
+  console.log('✅ Seed completed! Use the App to "Receive" items to increase stock.');
 }
 
 main()

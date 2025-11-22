@@ -1,3 +1,6 @@
+/ ============================================
+// backend/validators/commonValidator.js
+// ============================================
 const commonValidator = {
   /**
    * Validate required fields
@@ -6,7 +9,7 @@ const commonValidator = {
     const errors = [];
 
     fields.forEach((field) => {
-      if (!data[field]) {
+      if (data[field] === undefined || data[field] === null || data[field] === '') {
         errors.push(`${field} is required`);
       }
     });
@@ -22,6 +25,11 @@ const commonValidator = {
    */
   validateStringLength(value, min, max, fieldName) {
     const errors = [];
+
+    if (!value || typeof value !== 'string') {
+      errors.push(`${fieldName} must be a string`);
+      return { isValid: false, errors };
+    }
 
     if (value.length < min) {
       errors.push(`${fieldName} must be at least ${min} characters`);
@@ -42,6 +50,11 @@ const commonValidator = {
    */
   validateNumberRange(value, min, max, fieldName) {
     const errors = [];
+
+    if (typeof value !== 'number' || isNaN(value)) {
+      errors.push(`${fieldName} must be a valid number`);
+      return { isValid: false, errors };
+    }
 
     if (value < min) {
       errors.push(`${fieldName} must be at least ${min}`);
@@ -66,6 +79,50 @@ const commonValidator = {
     return {
       isValid,
       errors: isValid ? [] : [`${fieldName} must be one of: ${allowedValues.join(', ')}`],
+    };
+  },
+
+  /**
+   * Validate email format
+   */
+  validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  },
+
+  /**
+   * Validate positive number
+   */
+  validatePositiveNumber(value, fieldName) {
+    const errors = [];
+
+    if (typeof value !== 'number' || isNaN(value)) {
+      errors.push(`${fieldName} must be a valid number`);
+    } else if (value <= 0) {
+      errors.push(`${fieldName} must be greater than 0`);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
+
+  /**
+   * Validate non-negative number
+   */
+  validateNonNegativeNumber(value, fieldName) {
+    const errors = [];
+
+    if (typeof value !== 'number' || isNaN(value)) {
+      errors.push(`${fieldName} must be a valid number`);
+    } else if (value < 0) {
+      errors.push(`${fieldName} must be non-negative`);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
     };
   },
 };

@@ -1,23 +1,32 @@
 const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
-const { parsePagination, getPaginationMeta } = require('../utils/helpers');
+const { parsePagination, getPaginationMeta } = require('../utils/helpers'); // Keep team's helpers
 
 const prisma = new PrismaClient();
 
 class OperationController {
   /**
-   * Get all operations
-   * GET /api/operations
+   * Get all operations (History) with advanced filtering
+   * GET /api/operations 
    */
   static async getAll(req, res) {
     try {
-      const { status, type, productId } = req.query;
+      const { status, type, search } = req.query;
+      // Use team's pagination logic
       const { page, limit, skip } = parsePagination(req.query);
 
       const where = {};
       if (status) where.status = status;
       if (type) where.type = type;
-      if (productId) where.productId = productId;
+      
+      // Enhanced Search (Product Name or SKU inside lines)
+      if (search) {
+        where.OR = [
+          { id: { contains: search, mode: 'insensitive' } },
+          { notes: { contains: search, mode: 'insensitive' } },
+          { lines: { some: { product: { name: { contains: search, mode: 'insensitive' } } } } }
+        ];
+      }
 
       const [operations, total] = await Promise.all([
         prisma.operation.findMany({
@@ -26,35 +35,15 @@ class OperationController {
           take: limit,
           orderBy: { createdAt: 'desc' },
           include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                sku: true,
-                category: true,
-              },
+            // Deep includes (Team's requirement)
+            lines: {
+              include: {
+                product: { select: { id: true, name: true, sku: true, category: true } }
+              }
             },
-            fromLocation: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            toLocation: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
+            sourceLocation: { select: { id: true, name: true, type: true } },
+            destinationLocation: { select: { id: true, name: true, type: true } },
+            contact: { select: { id: true, name: true } },
           },
         }),
         prisma.operation.count({ where }),
@@ -79,25 +68,10 @@ class OperationController {
       const operation = await prisma.operation.findUnique({
         where: { id: req.params.id },
         include: {
-          product: true,
-          fromLocation: {
-            include: {
-              warehouse: true,
-            },
-          },
-          toLocation: {
-            include: {
-              warehouse: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
+          lines: { include: { product: true } },
+          sourceLocation: { include: { parentWarehouse: true } },
+          destinationLocation: { include: { parentWarehouse: true } },
+          contact: true,
         },
       });
 
@@ -113,206 +87,120 @@ class OperationController {
   }
 
   /**
-   * Create operation
+   * Create operation (TRANSACTIONAL)
    * POST /api/operations
    */
   static async create(req, res) {
-    const { productId, quantity, type, fromLocationId, toLocationId, notes } = req.body;
+    // Note: Using SKU is safer than ID for barcode workflows
+    const { sku, quantity, type, fromLocationId, toLocationId, notes } = req.body;
 
     try {
-      // Verify product exists
-      const product = await prisma.product.findUnique({
-        where: { id: productId },
+      // 1. Validation
+      if (!quantity || quantity <= 0) return res.status(400).json({ error: "Quantity must be positive" });
+
+      // 2. Verify Product
+      const product = await prisma.product.findUnique({ where: { sku } });
+      if (!product) return res.status(404).json({ error: 'Product not found' });
+
+      // 3. Run Transaction (The "Real" Move)
+      const operation = await prisma.$transaction(async (tx) => {
+        
+        // A. Create Ledger Entry
+        const op = await tx.operation.create({
+          data: {
+            id: `OP-${Date.now()}`,
+            type,
+            status: 'DONE', // Auto-complete
+            scheduledDate: new Date(),
+            notes,
+            sourceLocationId: fromLocationId ? parseInt(fromLocationId) : null,
+            destinationLocationId: toLocationId ? parseInt(toLocationId) : null,
+            
+            // Correctly use 'lines' relation
+            lines: {
+              create: {
+                productId: product.id,
+                demandQty: parseFloat(quantity),
+                doneQty: parseFloat(quantity)
+              }
+            }
+          },
+          include: { lines: true }
+        });
+
+        // B. Update Stock at DESTINATION
+        if (toLocationId) {
+          await OperationController._upsertStock(tx, product.id, parseInt(toLocationId), parseFloat(quantity));
+        }
+
+        // C. Update Stock at SOURCE (if Internal/Delivery)
+        if (fromLocationId) {
+          await OperationController._upsertStock(tx, product.id, parseInt(fromLocationId), -parseFloat(quantity));
+        }
+
+        // D. Update Product Global "On Hand"
+        await OperationController._updateProductTotal(tx, product.id);
+
+        return op;
       });
 
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-
-      // Verify locations exist if provided
-      if (fromLocationId) {
-        const fromLocation = await prisma.location.findUnique({
-          where: { id: fromLocationId },
-        });
-        if (!fromLocation) {
-          return res.status(404).json({ error: 'From location not found' });
-        }
-      }
-
-      if (toLocationId) {
-        const toLocation = await prisma.location.findUnique({
-          where: { id: toLocationId },
-        });
-        if (!toLocation) {
-          return res.status(404).json({ error: 'To location not found' });
-        }
-      }
-
-      const operation = await prisma.operation.create({
-        data: {
-          productId,
-          quantity: parseInt(quantity),
-          type,
-          fromLocationId: fromLocationId || null,
-          toLocationId: toLocationId || null,
-          status: 'PENDING',
-          notes,
-          userId: req.user.userId,
-        },
-        include: {
-          product: true,
-          fromLocation: true,
-          toLocation: true,
-        },
-      });
-
-      logger.info(`Operation created: ${operation.id} by user ${req.user.userId}`);
-
+      logger.info(`Operation created: ${operation.id}`);
       res.status(201).json(operation);
+
     } catch (error) {
       logger.error('Create operation error:', error);
-      res.status(500).json({ error: 'Failed to create operation' });
+      res.status(500).json({ error: error.message || 'Failed to create operation' });
     }
   }
 
-  /**
-   * Update operation
-   * PUT /api/operations/:id
-   */
-  static async update(req, res) {
-    const { productId, quantity, type, fromLocationId, toLocationId, notes } = req.body;
+  // --- HELPER METHODS (Keep these!) ---
+  
+  static async _upsertStock(tx, productId, locationId, change) {
+    const existing = await tx.stockItem.findUnique({
+      where: { productId_locationId: { productId, locationId } }
+    });
 
-    try {
-      const operation = await prisma.operation.update({
-        where: { id: req.params.id },
-        data: {
-          productId: productId || undefined,
-          quantity: quantity ? parseInt(quantity) : undefined,
-          type: type || undefined,
-          fromLocationId: fromLocationId || undefined,
-          toLocationId: toLocationId || undefined,
-          notes: notes !== undefined ? notes : undefined,
-        },
-        include: {
-          product: true,
-          fromLocation: true,
-          toLocation: true,
-        },
+    if (existing) {
+      const newQty = existing.quantity + change;
+      if (newQty < 0) throw new Error(`Insufficient stock at Location ID ${locationId}`);
+      await tx.stockItem.update({
+        where: { id: existing.id },
+        data: { quantity: newQty }
       });
-
-      logger.info(`Operation updated: ${operation.id} by user ${req.user.userId}`);
-
-      res.json(operation);
-    } catch (error) {
-      logger.error('Update operation error:', error);
-      
-      if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Operation not found' });
-      }
-      
-      res.status(500).json({ error: 'Failed to update operation' });
-    }
-  }
-
-  /**
-   * Update operation status
-   * PATCH /api/operations/:id/status
-   */
-  static async updateStatus(req, res) {
-    const { status } = req.body;
-
-    try {
-      const operation = await prisma.operation.update({
-        where: { id: req.params.id },
-        data: { status },
-        include: {
-          product: true,
-        },
+    } else {
+      if (change < 0) throw new Error(`Cannot take stock from empty location ${locationId}`);
+      await tx.stockItem.create({
+        data: { productId, locationId, quantity: change }
       });
-
-      // If operation is completed, update product quantity
-      if (status === 'COMPLETED') {
-        const quantityChange = operation.type === 'OUTBOUND' 
-          ? -operation.quantity 
-          : operation.quantity;
-
-        await prisma.product.update({
-          where: { id: operation.productId },
-          data: {
-            quantity: {
-              increment: quantityChange,
-            },
-          },
-        });
-      }
-
-      logger.info(`Operation status updated: ${operation.id} -> ${status} by user ${req.user.userId}`);
-
-      res.json(operation);
-    } catch (error) {
-      logger.error('Update operation status error:', error);
-      
-      if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Operation not found' });
-      }
-      
-      res.status(500).json({ error: 'Failed to update operation status' });
     }
   }
 
-  /**
-   * Update operation lines (for bulk operations)
-   * PUT /api/operations/:id/lines
-   */
-  static async updateOperationLines(req, res) {
-    const { lines } = req.body;
-
-    try {
-      // Implementation for bulk line updates
-      // This is a placeholder for complex multi-line operations
-      
-      res.json({ message: 'Operation lines updated successfully', lines });
-    } catch (error) {
-      logger.error('Update operation lines error:', error);
-      res.status(500).json({ error: 'Failed to update operation lines' });
-    }
+  static async _updateProductTotal(tx, productId) {
+    const allItems = await tx.stockItem.findMany({ where: { productId } });
+    const total = allItems.reduce((sum, item) => sum + item.quantity, 0);
+    await tx.product.update({
+      where: { id: productId },
+      data: { onHand: total }
+    });
   }
 
   /**
-   * Delete operation
-   * DELETE /api/operations/:id
+   * Delete operation (Restricted)
    */
   static async delete(req, res) {
     try {
-      const operation = await prisma.operation.findUnique({
-        where: { id: req.params.id },
-      });
+      const op = await prisma.operation.findUnique({ where: { id: req.params.id } });
+      if (!op) return res.status(404).json({ error: 'Operation not found' });
 
-      if (!operation) {
-        return res.status(404).json({ error: 'Operation not found' });
+      // Only allow delete if DRAFT. DONE operations are immutable history.
+      if (op.status !== 'DRAFT') {
+        return res.status(400).json({ error: 'Cannot delete completed operations. They are part of the ledger.' });
       }
 
-      // Only allow deletion of PENDING operations
-      if (operation.status !== 'PENDING') {
-        return res.status(400).json({ 
-          error: 'Only pending operations can be deleted' 
-        });
-      }
-
-      await prisma.operation.delete({
-        where: { id: req.params.id },
-      });
-
-      logger.info(`Operation deleted: ${req.params.id} by user ${req.user.userId}`);
-
+      await prisma.operation.delete({ where: { id: req.params.id } });
       res.json({ message: 'Operation deleted successfully' });
     } catch (error) {
       logger.error('Delete operation error:', error);
-      
-      if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Operation not found' });
-      }
-      
       res.status(500).json({ error: 'Failed to delete operation' });
     }
   }

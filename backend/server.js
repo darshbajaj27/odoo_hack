@@ -1,7 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+require('express-async-errors'); // Handles async errors automatically
 
+const logger = require('./utils/logger');
+const { errorHandler } = require('./middleware/errorHandler'); // Use your existing error handler
+
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -13,17 +18,17 @@ const searchRoutes = require('./routes/searchRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging
+// Professional Request Logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  logger.http(`${req.method} ${req.path}`);
   next();
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/products', productRoutes);
@@ -37,15 +42,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal server error',
-  });
-});
+// Global Error Handler (Must be last)
+app.use(errorHandler);
 
-// 404 handler
+// 404 Handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
@@ -53,6 +53,6 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 API available at http://localhost:${PORT}/api`);
+  logger.info(`🚀 Server running on port ${PORT}`);
+  logger.info(`📊 API available at http://localhost:${PORT}/api`);
 });

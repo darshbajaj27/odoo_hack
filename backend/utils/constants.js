@@ -1,35 +1,44 @@
 /**
  * Application-wide constants
+ * Updated to match Prisma Schema Enums
  */
 
 module.exports = {
   // User roles
   ROLES: {
-    ADMIN: 'ADMIN',
     MANAGER: 'MANAGER',
-    USER: 'USER',
+    STAFF: 'STAFF',
   },
 
-  // Operation types
+  // Operation types (Matches Prisma Enum OperationType)
   OPERATION_TYPES: {
-    INBOUND: 'INBOUND',
-    OUTBOUND: 'OUTBOUND',
-    TRANSFER: 'TRANSFER',
-    ADJUSTMENT: 'ADJUSTMENT',
+    RECEIPT: 'RECEIPT',      // Vendor -> Warehouse
+    DELIVERY: 'DELIVERY',    // Warehouse -> Customer
+    INTERNAL: 'INTERNAL',    // Warehouse -> Warehouse
+    ADJUSTMENT: 'ADJUSTMENT' // Inventory Check
   },
 
-  // Operation statuses
+  // Operation statuses (Matches Prisma Enum OperationStatus)
   OPERATION_STATUS: {
-    PENDING: 'PENDING',
-    COMPLETED: 'COMPLETED',
+    DRAFT: 'DRAFT',
+    WAITING: 'WAITING',
+    READY: 'READY',
+    DONE: 'DONE',
     CANCELLED: 'CANCELLED',
   },
 
-  // Contact types
+  // Contact types (Matches Prisma Enum ContactType)
   CONTACT_TYPES: {
-    SUPPLIER: 'SUPPLIER',
+    VENDOR: 'VENDOR',
     CUSTOMER: 'CUSTOMER',
-    LOGISTICS: 'LOGISTICS',
+  },
+  
+  // Location types (Matches Prisma Enum LocationType)
+  LOCATION_TYPES: {
+    INTERNAL: 'INTERNAL',
+    VENDOR: 'VENDOR',
+    CUSTOMER: 'CUSTOMER',
+    INVENTORY_LOSS: 'INVENTORY_LOSS'
   },
 
   // Pagination defaults
@@ -42,16 +51,6 @@ module.exports = {
   // JWT configuration
   JWT: {
     EXPIRATION: process.env.JWT_EXPIRATION || '7d',
-    REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '30d',
-  },
-
-  // Error messages
-  ERRORS: {
-    UNAUTHORIZED: 'Unauthorized',
-    FORBIDDEN: 'Forbidden',
-    NOT_FOUND: 'Not found',
-    VALIDATION_FAILED: 'Validation failed',
-    INTERNAL_ERROR: 'Internal server error',
   },
 
   // Success messages

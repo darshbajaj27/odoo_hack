@@ -1,25 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const settingsController = require('../controllers/settingsController');
+const { authenticate } = require('../middleware/auth'); // <--- Import this
 
 // Warehouses
-router.get('/warehouses', settingsController.getWarehouses);
-router.post('/warehouses', settingsController.createWarehouse);
-router.put('/warehouses/:id', settingsController.updateWarehouse);
-router.delete('/warehouses/:id', settingsController.deleteWarehouse);
+router.get('/warehouses', authenticate, settingsController.getWarehouses);
+router.post('/warehouses', authenticate, settingsController.createWarehouse);
+router.put('/warehouses/:id', authenticate, settingsController.updateWarehouse);
+router.delete('/warehouses/:id', authenticate, settingsController.deleteWarehouse);
 
 // Locations
-router.get('/locations', settingsController.getLocations);
-router.post('/locations', settingsController.createLocation);
-router.put('/locations/:id', settingsController.updateLocation);
-router.delete('/locations/:id', settingsController.deleteLocation);
+router.get('/locations', authenticate, settingsController.getLocations);
+router.post('/locations', authenticate, settingsController.createLocation);
+router.put('/locations/:id', authenticate, settingsController.updateLocation);
+router.delete('/locations/:id', authenticate, settingsController.deleteLocation);
 
 // Users
-router.get('/users', settingsController.getUsers);
-router.put('/users/:id', settingsController.updateUser);
+router.get('/users', authenticate, settingsController.getUsers);
+router.put('/users/:id', authenticate, settingsController.updateUser);
 
 // Contacts
-router.get('/contacts', settingsController.getContacts);
-router.post('/contacts', settingsController.createContact);
+router.get('/contacts', authenticate, settingsController.getContacts);
+router.post('/contacts', authenticate, settingsController.createContact);
 
 module.exports = router;

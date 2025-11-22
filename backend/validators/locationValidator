@@ -1,0 +1,65 @@
+// ============================================
+// backend/validators/locationValidator.js
+// ============================================
+const locationValidator = {
+  /**
+   * Validate location creation
+   */
+  validateCreate(data) {
+    const errors = [];
+    const validTypes = ['INTERNAL', 'VENDOR', 'CUSTOMER', 'INVENTORY_LOSS'];
+
+    // Name validation
+    if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+      errors.push('Location name is required');
+    } else if (data.name.length > 100) {
+      errors.push('Location name must not exceed 100 characters');
+    }
+
+    // Type validation
+    if (!data.type || !validTypes.includes(data.type)) {
+      errors.push(`Location type must be one of: ${validTypes.join(', ')}`);
+    }
+
+    // Parent warehouse validation (optional but if provided must be valid)
+    if (data.parentWarehouseId !== undefined && data.parentWarehouseId !== null) {
+      if (typeof data.parentWarehouseId !== 'number' && typeof data.parentWarehouseId !== 'string') {
+        errors.push('Parent warehouse ID must be a valid identifier');
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
+
+  /**
+   * Validate location update
+   */
+  validateUpdate(data) {
+    const errors = [];
+    const validTypes = ['INTERNAL', 'VENDOR', 'CUSTOMER', 'INVENTORY_LOSS'];
+
+    if (data.name !== undefined && data.name !== null) {
+      if (typeof data.name !== 'string' || data.name.trim().length === 0) {
+        errors.push('Location name cannot be empty');
+      } else if (data.name.length > 100) {
+        errors.push('Location name must not exceed 100 characters');
+      }
+    }
+
+    if (data.type !== undefined && data.type !== null) {
+      if (!validTypes.includes(data.type)) {
+        errors.push(`Location type must be one of: ${validTypes.join(', ')}`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
+};
+
+module.exports = locationValidator;

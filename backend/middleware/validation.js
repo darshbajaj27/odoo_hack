@@ -7,15 +7,14 @@ const logger = require('../utils/logger');
 const authSchemas = {
   login: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
+    password: Joi.string().required(),
   }),
 
   signup: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
-    firstName: Joi.string().min(2).required(),
-    lastName: Joi.string().min(2).required(),
-    phone: Joi.string().optional(),
+    password: Joi.string().min(6).required(),
+    name: Joi.string().min(2).required(), // Changed from firstName/lastName to name (matches your User model)
+    role: Joi.string().valid('MANAGER', 'STAFF').optional(),
   }),
 
   forgotPassword: Joi.object({
@@ -23,8 +22,13 @@ const authSchemas = {
   }),
 
   resetPassword: Joi.object({
-    token: Joi.string().required(),
-    newPassword: Joi.string().min(8).required(),
+    resetToken: Joi.string().required(),
+    newPassword: Joi.string().min(6).required(),
+  }),
+
+  verifyOtp: Joi.object({
+    email: Joi.string().email().required(),
+    otp: Joi.string().required(),
   }),
 };
 
@@ -35,21 +39,21 @@ const productSchemas = {
   create: Joi.object({
     name: Joi.string().required(),
     sku: Joi.string().required(),
-    description: Joi.string().optional(),
     category: Joi.string().required(),
-    price: Joi.number().positive().required(),
-    quantity: Joi.number().integer().min(0).required(),
-    reorderLevel: Joi.number().integer().min(0).required(),
+    price: Joi.number().positive().optional(),
+    costPrice: Joi.number().positive().optional(),
+    // We DO NOT require quantity here. Stock starts at 0.
+    minStock: Joi.number().integer().min(0).optional(), 
+    description: Joi.string().optional(),
   }),
 
   update: Joi.object({
     name: Joi.string().optional(),
     sku: Joi.string().optional(),
-    description: Joi.string().optional(),
     category: Joi.string().optional(),
     price: Joi.number().positive().optional(),
-    quantity: Joi.number().integer().min(0).optional(),
-    reorderLevel: Joi.number().integer().min(0).optional(),
+    minStock: Joi.number().integer().min(0).optional(),
+    description: Joi.string().optional(),
   }),
 };
 
@@ -58,25 +62,23 @@ const productSchemas = {
  */
 const operationSchemas = {
   create: Joi.object({
-    productId: Joi.string().required(),
-    quantity: Joi.number().integer().positive().required(),
-    type: Joi.string().valid('INBOUND', 'OUTBOUND', 'TRANSFER', 'ADJUSTMENT').required(),
-    fromLocationId: Joi.string().optional(),
-    toLocationId: Joi.string().optional(),
+    // Allow SKU OR ProductID
+    sku: Joi.string().optional(),
+    productId: Joi.alternatives().try(Joi.string(), Joi.number()).optional(),
+    
+    quantity: Joi.number().positive().required(),
+    
+    // Updated ENUMS to match your new logic
+    type: Joi.string().valid('RECEIPT', 'DELIVERY', 'INTERNAL', 'ADJUSTMENT').required(),
+    
+    fromLocationId: Joi.alternatives().try(Joi.string(), Joi.number()).optional(),
+    toLocationId: Joi.alternatives().try(Joi.string(), Joi.number()).optional(),
     notes: Joi.string().optional(),
-  }),
+  }).or('sku', 'productId'), // Require at least one
 
   update: Joi.object({
-    productId: Joi.string().optional(),
-    quantity: Joi.number().integer().positive().optional(),
-    type: Joi.string().valid('INBOUND', 'OUTBOUND', 'TRANSFER', 'ADJUSTMENT').optional(),
-    fromLocationId: Joi.string().optional(),
-    toLocationId: Joi.string().optional(),
     notes: Joi.string().optional(),
-  }),
-
-  updateStatus: Joi.object({
-    status: Joi.string().valid('PENDING', 'COMPLETED', 'CANCELLED').required(),
+    // Operations are generally immutable in a ledger, but we allow notes updates
   }),
 };
 
@@ -86,33 +88,20 @@ const operationSchemas = {
 const settingsSchemas = {
   warehouse: Joi.object({
     name: Joi.string().required(),
-    code: Joi.string().required(),
+    shortCode: Joi.string().required(),
     address: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().required(),
-    zipCode: Joi.string().required(),
-    country: Joi.string().required(),
   }),
 
   location: Joi.object({
     name: Joi.string().required(),
-    code: Joi.string().required(),
-    warehouseId: Joi.string().required(),
-    aisle: Joi.string().optional(),
-    rack: Joi.string().optional(),
-    shelf: Joi.string().optional(),
-  }),
-
-  userRole: Joi.object({
-    role: Joi.string().valid('USER', 'ADMIN', 'MANAGER').required(),
+    type: Joi.string().valid('INTERNAL', 'VENDOR', 'CUSTOMER', 'INVENTORY_LOSS').required(),
+    parentWarehouseId: Joi.number().required(),
   }),
 
   contact: Joi.object({
     name: Joi.string().required(),
+    type: Joi.string().valid('VENDOR', 'CUSTOMER').required(),
     email: Joi.string().email().optional(),
-    phone: Joi.string().optional(),
-    company: Joi.string().optional(),
-    type: Joi.string().valid('SUPPLIER', 'CUSTOMER', 'LOGISTICS').required(),
   }),
 };
 
@@ -127,7 +116,7 @@ const validate = (schema) => {
     });
 
     if (error) {
-      logger.warn('Validation error:', error.details);
+      // logger.warn('Validation error:', error.details); // Uncomment if logger exists
       const details = error.details.map((detail) => ({
         field: detail.path.join('.'),
         message: detail.message,
@@ -144,9 +133,6 @@ const validate = (schema) => {
   };
 };
 
-/**
- * Validation middleware exports
- */
 const validateAuth = (action) => validate(authSchemas[action]);
 const validateProduct = (action) => validate(productSchemas[action]);
 const validateOperation = (action) => validate(operationSchemas[action]);
