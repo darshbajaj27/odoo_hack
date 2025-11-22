@@ -87,24 +87,24 @@ export function Settings({ onNavigate }: SettingsProps) {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Header */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Settings & Warehouse</h1>
-        <p className="text-slate-600 mt-2">Manage warehouses and storage locations</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Settings & Warehouse</h1>
+        <p className="text-slate-600 dark:text-gray-400 mt-2">Manage warehouses and storage locations</p>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-        <div className="flex border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex border-b border-slate-200 dark:border-slate-800">
           {(["warehouses", "locations"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 px-4 sm:px-6 py-4 text-sm sm:text-base font-semibold transition-colors ${
                 activeTab === tab
-                  ? "text-teal-700 border-b-2 border-teal-700 bg-teal-50"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "text-teal-700 dark:text-teal-300 border-b-2 border-teal-700 bg-teal-50 dark:bg-teal-950"
+                  : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -118,7 +118,7 @@ export function Settings({ onNavigate }: SettingsProps) {
           {activeTab === "warehouses" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">Warehouse Locations</h2>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Warehouse Locations</h2>
                 <button
                   onClick={() => setShowWarehouseDialog(true)}
                   className="h-10 px-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
@@ -133,27 +133,27 @@ export function Settings({ onNavigate }: SettingsProps) {
                 {warehouses.map((warehouse) => (
                   <div
                     key={warehouse.id}
-                    className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                   >
-                    <div className="p-4 border-b border-slate-200">
-                      <h3 className="text-lg font-bold text-slate-900">{warehouse.name}</h3>
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{warehouse.name}</h3>
                     </div>
-                    <div className="p-4 space-y-3 border-b border-slate-200">
+                    <div className="p-4 space-y-3 border-b border-slate-200 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <span className="px-3 py-1 bg-slate-100 text-slate-700 text-sm font-semibold rounded">
+                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-gray-300 text-sm font-semibold rounded">
                           {warehouse.shortCode}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-600">{warehouse.address}</p>
+                      <p className="text-sm text-slate-600 dark:text-gray-400">{warehouse.address}</p>
                     </div>
                     <div className="p-4 flex items-center justify-end gap-2">
-                      <button className="h-8 px-3 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-sm font-medium flex items-center gap-1">
+                      <button className="h-8 px-3 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-sm font-medium flex items-center gap-1">
                         <Edit2 size={16} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteWarehouse(warehouse.id)}
-                        className="h-8 px-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
+                        className="h-8 px-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
                       >
                         <Trash2 size={16} />
                         Delete
@@ -166,43 +166,43 @@ export function Settings({ onNavigate }: SettingsProps) {
               {/* Add Warehouse Dialog */}
               {showWarehouseDialog && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-96 overflow-y-auto">
-                    <div className="flex items-center justify-between p-6 border-b border-slate-200 sticky top-0 bg-white">
-                      <h3 className="text-lg font-semibold text-slate-900">Add New Warehouse</h3>
+                  <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg max-w-md w-full max-h-96 overflow-y-auto">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add New Warehouse</h3>
                       <button
                         onClick={() => setShowWarehouseDialog(false)}
-                        className="text-slate-500 hover:text-slate-700"
+                        className="text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300"
                       >
                         <X size={20} />
                       </button>
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Warehouse Name</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Warehouse Name</label>
                         <input
                           type="text"
                           value={newWarehouse.name}
                           onChange={(e) => setNewWarehouse({ ...newWarehouse, name: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                           placeholder="e.g., New York DC"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Short Code</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Short Code</label>
                         <input
                           type="text"
                           value={newWarehouse.shortCode}
                           onChange={(e) => setNewWarehouse({ ...newWarehouse, shortCode: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                           placeholder="e.g., NY"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Address</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Address</label>
                         <textarea
                           value={newWarehouse.address}
                           onChange={(e) => setNewWarehouse({ ...newWarehouse, address: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                           rows={3}
                           placeholder="Enter full address"
                         />
@@ -224,7 +224,7 @@ export function Settings({ onNavigate }: SettingsProps) {
           {activeTab === "locations" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">Storage Locations</h2>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Storage Locations</h2>
                 <button
                   onClick={() => setShowLocationDialog(true)}
                   className="h-10 px-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
@@ -238,17 +238,17 @@ export function Settings({ onNavigate }: SettingsProps) {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left px-4 py-3 font-semibold text-slate-700">Location Name</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-700">Type</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-700">Parent Warehouse</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-700">Actions</th>
+                    <tr className="border-b border-slate-200 dark:border-slate-800">
+                      <th className="text-left px-4 py-3 font-semibold text-slate-700 dark:text-gray-300">Location Name</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-700 dark:text-gray-300">Type</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-700 dark:text-gray-300">Parent Warehouse</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-700 dark:text-gray-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {locations.map((location) => (
-                      <tr key={location.id} className="border-b border-slate-200 hover:bg-slate-50">
-                        <td className="px-4 py-3 text-slate-900 font-medium">{location.name}</td>
+                      <tr key={location.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800">
+                        <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{location.name}</td>
                         <td className="px-4 py-3">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(location.type)}`}
@@ -256,9 +256,9 @@ export function Settings({ onNavigate }: SettingsProps) {
                             {location.type}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-600">{location.parentWarehouse}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-gray-400">{location.parentWarehouse}</td>
                         <td className="px-4 py-3">
-                          <button className="text-slate-600 hover:text-slate-900 text-sm font-medium">Edit</button>
+                          <button className="text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Edit</button>
                         </td>
                       </tr>
                     ))}
@@ -269,29 +269,29 @@ export function Settings({ onNavigate }: SettingsProps) {
               {/* Add Location Dialog */}
               {showLocationDialog && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-96 overflow-y-auto">
-                    <div className="flex items-center justify-between p-6 border-b border-slate-200 sticky top-0 bg-white">
-                      <h3 className="text-lg font-semibold text-slate-900">Add New Location</h3>
+                  <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg max-w-md w-full max-h-96 overflow-y-auto">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add New Location</h3>
                       <button
                         onClick={() => setShowLocationDialog(false)}
-                        className="text-slate-500 hover:text-slate-700"
+                        className="text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300"
                       >
                         <X size={20} />
                       </button>
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Location Name</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Location Name</label>
                         <input
                           type="text"
                           value={newLocation.name}
                           onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                           placeholder="e.g., WH/Stock"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Location Type</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Location Type</label>
                         <select
                           value={newLocation.type}
                           onChange={(e) =>
@@ -300,7 +300,7 @@ export function Settings({ onNavigate }: SettingsProps) {
                               type: e.target.value as "Internal" | "Vendor" | "Customer" | "Inventory Loss",
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         >
                           <option value="Internal">Internal</option>
                           <option value="Vendor">Vendor</option>
@@ -309,11 +309,11 @@ export function Settings({ onNavigate }: SettingsProps) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Parent Warehouse</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Parent Warehouse</label>
                         <select
                           value={newLocation.parentWarehouse}
                           onChange={(e) => setNewLocation({ ...newLocation, parentWarehouse: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         >
                           <option value="">Select a warehouse</option>
                           {warehouses.map((w) => (

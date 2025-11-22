@@ -77,12 +77,12 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Operations</h1>
-          <p className="text-slate-600 mt-1">Manage receipts and deliveries</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Operations</h1>
+          <p className="text-slate-600 dark:text-gray-400 mt-1">Manage receipts and deliveries</p>
         </div>
         <button className="h-11 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 px-6">
           <Plus size={20} />
@@ -93,16 +93,16 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Search Reference, Vendor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 border border-slate-300 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 outline-none transition-all"
+            className="w-full h-11 pl-10 pr-4 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 outline-none transition-all"
           />
         </div>
-        <button className="h-11 px-4 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+        <button className="h-11 px-4 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
           <Filter size={18} />
           Filter
         </button>
@@ -132,18 +132,18 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-slate-100 border-b border-slate-200">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Reference</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Vendor</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Date</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Source Doc</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900"></th>
+              <tr className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Reference</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Vendor</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Date</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Source Doc</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white"></th>
               </tr>
             </thead>
             <tbody>
@@ -153,12 +153,12 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
                   <tr
                     key={idx}
                     onClick={() => handleRowClick(op.id)}
-                    className="border-b border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-slate-900">{op.ref}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{op.vendor}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{op.date}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{op.source}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{op.ref}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-gray-400">{op.vendor}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-gray-400">{op.date}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-gray-400">{op.source}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
                         {op.status}
@@ -182,18 +182,18 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
               <div
                 key={idx}
                 onClick={() => handleRowClick(op.id)}
-                className="bg-white border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-semibold text-slate-900">{op.ref}</p>
-                    <p className="text-sm text-slate-600">{op.vendor}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{op.ref}</p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">{op.vendor}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
                     {op.status}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400">
                   <span>{op.date}</span>
                   <span>{op.source}</span>
                 </div>

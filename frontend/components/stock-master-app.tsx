@@ -67,7 +67,7 @@ export function StockMasterApp() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
       {/* Top Navigation */}
       <TopNavigation
         currentView={currentView}

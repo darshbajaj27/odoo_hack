@@ -54,11 +54,11 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   ]
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight text-balance">Good Morning</h1>
-        <p className="text-gray-600 mt-2">Welcome to your inventory dashboard</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight text-balance">Good Morning</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Welcome to your inventory dashboard</p>
       </div>
 
       {/* KPI Cards */}
@@ -85,8 +85,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="flex flex-col sm:flex-row gap-3">
           {quickActions.map((action, idx) => (
             <button
@@ -103,8 +103,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Stock Moves per Week</h2>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Stock Moves per Week</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -117,8 +117,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {[
               { action: "Receipt Validated", time: "2 hours ago", icon: Truck },
@@ -127,13 +127,13 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             ].map((activity, idx) => {
               const Icon = activity.icon
               return (
-                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-200 last:border-0">
-                  <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
+                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-200 dark:border-slate-800 last:border-0">
+                  <div className="p-2 bg-gradient-to-br from-purple-100 dark:from-purple-900 to-purple-50 dark:to-slate-900 rounded-lg">
                     <Icon size={16} className="text-[#714B67]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.action}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                       <Clock size={12} />
                       {activity.time}
                     </p>
