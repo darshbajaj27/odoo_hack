@@ -68,7 +68,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           return (
             <div
               key={idx}
-              className={`${kpi.color} bg-opacity-10 rounded-lg p-6 border border-current border-opacity-20 shadow-sm hover:shadow-md transition-shadow`}
+              className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-lg ${kpi.color}`}>
@@ -76,9 +76,9 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 </div>
                 {kpi.trend && <span className="text-sm font-semibold text-emerald-600">{kpi.trend}</span>}
               </div>
-              <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{kpi.value}</p>
-              {kpi.subtext && <p className="text-xs text-gray-500 mt-2">{kpi.subtext}</p>}
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{kpi.title}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2">{kpi.value}</p>
+              {kpi.subtext && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{kpi.subtext}</p>}
             </div>
           )
         })}
@@ -107,7 +107,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Stock Moves per Week</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="0" stroke="#e5e7eb" opacity={0} />
               <XAxis dataKey="week" stroke="#6b7280" />
               <YAxis stroke="#6b7280" />
               <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e5e7eb" }} />

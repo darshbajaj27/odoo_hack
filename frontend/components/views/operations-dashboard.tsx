@@ -49,7 +49,7 @@ export function OperationsDashboard({ onNavigate }: OperationsDashboardProps) {
           return (
             <div
               key={op.id}
-              className={`${op.color} bg-opacity-10 dark:bg-opacity-20 rounded-lg p-8 border border-current border-opacity-20 shadow-sm hover:shadow-lg transition-shadow`}
+              className="bg-white dark:bg-slate-900 rounded-lg p-8 border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-shadow"
             >
               <div className="flex items-start justify-between mb-6">
                 <div className={`p-3 rounded-lg ${op.color}`}>
@@ -57,7 +57,7 @@ export function OperationsDashboard({ onNavigate }: OperationsDashboardProps) {
                 </div>
                 <button
                   onClick={() => onNavigate("operations-list")}
-                  className="p-2 hover:bg-white dark:hover:bg-slate-800 hover:bg-opacity-50 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
                   title={`Add new ${op.title.toLowerCase()}`}
                 >
                   <Plus size={20} />
