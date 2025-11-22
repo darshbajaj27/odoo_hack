@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { LogOut, LayoutDashboard, Boxes, TrendingUp, Package, Settings } from "lucide-react"
 
 interface SidebarProps {
@@ -22,10 +23,16 @@ export function Sidebar({ currentView, onNavigate, onLogout }: SidebarProps) {
       {/* Logo */}
       <div className="p-6 border-b border-purple-700 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-700 dark:from-purple-800 to-purple-900 dark:to-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg">
-            SM
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden">
+            <Image
+              src="/icon.jpg"
+              alt="Stock-Master Logo"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="text-xl font-semibold tracking-tight">StockMaster</span>
+          <span className="text-xl font-semibold tracking-tight">Stock-Master</span>
         </div>
       </div>
 

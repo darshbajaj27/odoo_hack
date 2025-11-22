@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Menu, X, ChevronDown, LogOut } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 
@@ -44,10 +45,16 @@ export function TopNavigation({ currentView, userName, onNavigate, onLogout }: T
         <div className="flex items-center justify-between h-full px-6">
           {/* Left Section - Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-700 to-purple-900 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
-              SM
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-md overflow-hidden">
+              <Image
+                src="/icon.jpg"
+                alt="Stock-Master Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <span className="text-lg font-semibold text-gray-900 dark:text-white hidden sm:inline">StockMaster</span>
+            <span className="text-lg font-semibold text-gray-900 dark:text-white hidden sm:inline">Stock-Master</span>
           </div>
 
           {/* Center Section - Main Menu (Desktop) */}
