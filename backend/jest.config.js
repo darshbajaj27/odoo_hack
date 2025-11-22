@@ -24,7 +24,7 @@ module.exports = {
     '!**/dist/**',
     '!**/.next/**',
   ],
-  setupFiles: ['dotenv/config'],
+  setupFiles: ['<rootDir>/tests/jest-setup.js'],
   
   // Coverage thresholds for StockMaster backend
   coverageThreshold: {

@@ -9,7 +9,10 @@ describe('Operation Controller', () => {
       const validOperation = {
         productId: 'prod-123',
         quantity: 10,
-        type: 'INBOUND',
+        type: 'RECEIPT',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        contactId: 'contact-123',
+        sourceLocationId: 'loc-123',
       };
 
       const result = operationValidator.validateCreate(validOperation);
@@ -33,47 +36,51 @@ describe('Operation Controller', () => {
       const invalidOperation = {
         productId: 'prod-123',
         quantity: -5,
-        type: 'INBOUND',
+        type: 'RECEIPT',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
       };
 
       const result = operationValidator.validateCreate(invalidOperation);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Quantity must be a positive number');
+      expect(result.errors).toContain('Quantity must be greater than 0');
     });
 
     test('should reject zero quantity', () => {
       const invalidOperation = {
         productId: 'prod-123',
         quantity: 0,
-        type: 'INBOUND',
+        type: 'RECEIPT',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
       };
 
       const result = operationValidator.validateCreate(invalidOperation);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Quantity must be a positive number');
+      expect(result.errors).toContain('Quantity must be greater than 0');
     });
 
     test('should validate transfer operation locations', () => {
       const invalidTransfer = {
         productId: 'prod-123',
         quantity: 10,
-        type: 'TRANSFER',
-        // Missing fromLocationId and toLocationId
+        type: 'INTERNAL',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        // Missing sourceLocationId and destinationLocationId
       };
 
       const result = operationValidator.validateCreate(invalidTransfer);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('From location is required for transfer operations');
-      expect(result.errors).toContain('To location is required for transfer operations');
+      expect(result.errors).toContain('Source location is required for internal transfers');
+      expect(result.errors).toContain('Destination location is required for internal transfers');
     });
 
     test('should accept valid transfer operation', () => {
       const validTransfer = {
         productId: 'prod-123',
         quantity: 10,
-        type: 'TRANSFER',
-        fromLocationId: 'loc-123',
-        toLocationId: 'loc-456',
+        type: 'INTERNAL',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        sourceLocationId: 'loc-123',
+        destinationLocationId: 'loc-456',
       };
 
       const result = operationValidator.validateCreate(validTransfer);
@@ -84,7 +91,7 @@ describe('Operation Controller', () => {
     test('should reject missing product ID', () => {
       const invalidOperation = {
         quantity: 10,
-        type: 'INBOUND',
+        type: 'RECEIPT',
       };
 
       const result = operationValidator.validateCreate(invalidOperation);
@@ -96,7 +103,7 @@ describe('Operation Controller', () => {
       const invalidOperation = {
         productId: '',
         quantity: 10,
-        type: 'INBOUND',
+        type: 'RECEIPT',
       };
 
       const result = operationValidator.validateCreate(invalidOperation);
@@ -141,7 +148,10 @@ describe('Operation Controller', () => {
       const operation = {
         productId: 'prod-123',
         quantity: 50,
-        type: 'INBOUND',
+        type: 'RECEIPT',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        contactId: 'contact-123',
+        sourceLocationId: 'loc-123',
       };
 
       const result = operationValidator.validateCreate(operation);
@@ -152,7 +162,10 @@ describe('Operation Controller', () => {
       const operation = {
         productId: 'prod-123',
         quantity: 30,
-        type: 'OUTBOUND',
+        type: 'DELIVERY',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
+        contactId: 'contact-123',
+        destinationLocationId: 'loc-456',
       };
 
       const result = operationValidator.validateCreate(operation);
@@ -164,6 +177,7 @@ describe('Operation Controller', () => {
         productId: 'prod-123',
         quantity: 5,
         type: 'ADJUSTMENT',
+        scheduledDate: new Date(Date.now() + 86400000).toISOString(),
       };
 
       const result = operationValidator.validateCreate(operation);

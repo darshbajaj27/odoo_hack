@@ -145,6 +145,46 @@ const operationValidator = {
   },
 
   /**
+   * Validate operation update
+   * Allows partial updates with validation
+   */
+  validateUpdate(data) {
+    const errors = [];
+    const validTypes = ['RECEIPT', 'DELIVERY', 'INTERNAL', 'ADJUSTMENT'];
+
+    // Check quantity if provided
+    if (data.quantity !== undefined && data.quantity !== null) {
+      if (typeof data.quantity !== 'number' || isNaN(data.quantity)) {
+        errors.push('Quantity must be a valid number');
+      } else if (data.quantity <= 0) {
+        errors.push('Quantity must be a positive number');
+      }
+    }
+
+    // Check operation type if provided
+    if (data.type !== undefined && data.type !== null) {
+      if (!validTypes.includes(data.type)) {
+        errors.push(`Operation type must be one of: ${validTypes.join(', ')}`);
+      }
+    }
+
+    // Scheduled Date validation if provided
+    if (data.scheduledDate !== undefined && data.scheduledDate !== null) {
+      const date = new Date(data.scheduledDate);
+      if (isNaN(date.getTime())) {
+        errors.push('Scheduled date must be a valid date');
+      } else if (date < new Date()) {
+        errors.push('Scheduled date cannot be in the past');
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
+
+  /**
    * Validate operation completion
    * Ensures all lines are completed before marking as DONE
    */

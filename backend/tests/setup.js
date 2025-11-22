@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { execSync } = require('child_process');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.test' });
 
 const prisma = new PrismaClient();
 
@@ -11,7 +11,7 @@ module.exports = {
       // Push the Prisma schema to the test database
       console.log('Setting up test database...');
       execSync('npx prisma db push --force-reset', {
-        env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL },
+        env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
         stdio: 'inherit',
       });
       console.log('Test database setup complete');

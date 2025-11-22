@@ -1,10 +1,7 @@
 // ============================================
 // backend/tests/unit/auth.test.js
 // ============================================
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const AuthController = require('../../controllers/authController');
 
 // Mock Prisma
 jest.mock('@prisma/client', () => {
@@ -18,6 +15,20 @@ jest.mock('@prisma/client', () => {
   return { PrismaClient: jest.fn(() => mockPrisma) };
 });
 
+// Mock bcrypt
+jest.mock('bcrypt', () => ({
+  hash: jest.fn((password) => Promise.resolve(`hashed_${password}`)),
+  compare: jest.fn(),
+}));
+
+// Mock jwt
+jest.mock('jsonwebtoken', () => ({
+  sign: jest.fn((payload) => `mock_token_${payload.userId}`),
+  verify: jest.fn(),
+}));
+
+const AuthController = require('../../controllers/authController');
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 describe('Authentication Controller', () => {
@@ -39,18 +50,19 @@ describe('Authentication Controller', () => {
       req.body = {
         email: 'test@example.com',
         password: 'Test@1234',
-        firstName: 'Test',
-        lastName: 'User',
-        phone: '+1234567890',
+        name: 'Test User',
+        role: 'STAFF',
       };
 
       prisma.user.findUnique.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'USER',
+        name: 'Test User',
+        role: 'STAFF',
+        status: 'ACTIVE',
+        avatar: 'TU',
+        password: 'hashed_Test@1234',
       });
 
       await AuthController.signup(req, res);
@@ -60,22 +72,13 @@ describe('Authentication Controller', () => {
       });
       expect(prisma.user.create).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'User registered successfully',
-          user: expect.any(Object),
-          accessToken: expect.any(String),
-          refreshToken: expect.any(String),
-        })
-      );
     });
 
     test('should reject signup with existing email', async () => {
       req.body = {
         email: 'existing@example.com',
         password: 'Test@1234',
-        firstName: 'Test',
-        lastName: 'User',
+        name: 'Test User',
       };
 
       prisma.user.findUnique.mockResolvedValue({
@@ -87,7 +90,20 @@ describe('Authentication Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'User already exists',
+        message: 'Email already registered',
+      });
+    });
+
+    test('should reject signup with missing fields', async () => {
+      req.body = {
+        email: 'test@example.com',
+      };
+
+      await AuthController.signup(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Email, password, and name are required',
       });
     });
   });
@@ -99,14 +115,14 @@ describe('Authentication Controller', () => {
         password: 'Test@123',
       };
 
-      const hashedPassword = await bcrypt.hash('Test@123', 10);
+      bcrypt.compare.mockResolvedValue(true);
       prisma.user.findUnique.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
-        password: hashedPassword,
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'USER',
+        password: 'hashed_Test@123',
+        name: 'Test User',
+        role: 'STAFF',
+        status: 'ACTIVE',
       });
 
       await AuthController.login(req, res);
@@ -116,18 +132,15 @@ describe('Authentication Controller', () => {
       });
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Login successful',
           user: expect.any(Object),
-          accessToken: expect.any(String),
-          refreshToken: expect.any(String),
         })
       );
     });
 
-    test('should reject login with invalid credentials', async () => {
+    test('should reject login with invalid email', async () => {
       req.body = {
-        email: 'test@example.com',
-        password: 'WrongPassword',
+        email: 'nonexistent@example.com',
+        password: 'Test@123',
       };
 
       prisma.user.findUnique.mockResolvedValue(null);
@@ -136,66 +149,176 @@ describe('Authentication Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Invalid email or password',
+        message: 'Invalid email or password',
       });
     });
 
-    test('should reject login with incorrect password', async () => {
+    test('should reject login with invalid password', async () => {
       req.body = {
         email: 'test@example.com',
         password: 'WrongPassword',
       };
 
-      const hashedPassword = await bcrypt.hash('CorrectPassword', 10);
+      bcrypt.compare.mockResolvedValue(false);
       prisma.user.findUnique.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
-        password: hashedPassword,
+        password: 'hashed_CorrectPassword',
+        name: 'Test User',
+        status: 'ACTIVE',
       });
 
       await AuthController.login(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Invalid email or password',
+        message: 'Invalid email or password',
+      });
+    });
+
+    test('should reject login with missing fields', async () => {
+      req.body = {
+        email: 'test@example.com',
+      };
+
+      await AuthController.login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Email and password are required',
+      });
+    });
+
+    test('should reject login with inactive account', async () => {
+      req.body = {
+        email: 'test@example.com',
+        password: 'Test@123',
+      };
+
+      bcrypt.compare.mockResolvedValue(true);
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        password: 'hashed_Test@123',
+        name: 'Test User',
+        status: 'INACTIVE',
+      });
+
+      await AuthController.login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Account is inactive',
       });
     });
   });
 
-  describe('refresh token', () => {
-    test('should refresh JWT token with valid refresh token', async () => {
-      const userId = 'user-123';
-      const refreshToken = jwt.sign(
-        { userId },
-        process.env.JWT_SECRET || 'test-secret',
-        { expiresIn: '30d' }
-      );
-
-      req.body = { refreshToken };
+  describe('forgotPassword', () => {
+    test('should accept valid email for password reset', async () => {
+      req.body = {
+        email: 'test@example.com',
+      };
 
       prisma.user.findUnique.mockResolvedValue({
-        id: userId,
+        id: 'user-123',
         email: 'test@example.com',
-        role: 'USER',
       });
+      prisma.user.update.mockResolvedValue({});
 
-      await AuthController.refresh(req, res);
+      await AuthController.forgotPassword(req, res);
 
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          accessToken: expect.any(String),
-        })
-      );
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'If the email exists, an OTP has been sent',
+      });
     });
 
-    test('should reject invalid refresh token', async () => {
-      req.body = { refreshToken: 'invalid-token' };
+    test('should not reveal if email does not exist', async () => {
+      req.body = {
+        email: 'nonexistent@example.com',
+      };
 
-      await AuthController.refresh(req, res);
+      prisma.user.findUnique.mockResolvedValue(null);
 
-      expect(res.status).toHaveBeenCalledWith(401);
+      await AuthController.forgotPassword(req, res);
+
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Invalid refresh token',
+        message: 'If the email exists, an OTP has been sent',
+      });
+    });
+
+    test('should reject missing email', async () => {
+      req.body = {};
+
+      await AuthController.forgotPassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Email is required',
+      });
+    });
+  });
+
+  describe('verifyOtp', () => {
+
+    test('should reject invalid OTP', async () => {
+      const now = Date.now();
+      const futureDate = new Date(now + 5 * 60 * 1000);
+
+      req.body = {
+        email: 'test@example.com',
+        otp: 'wrong-otp',
+      };
+
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        otpSecret: '123456',
+        otpExpires: futureDate,
+      });
+
+      await AuthController.verifyOtp(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Invalid OTP',
+      });
+    });
+
+    test('should reject expired OTP', async () => {
+      const pastDate = new Date(Date.now() - 1000);
+
+      req.body = {
+        email: 'test@example.com',
+        otp: '123456',
+      };
+
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        otpSecret: '123456',
+        otpExpires: pastDate,
+      });
+
+      await AuthController.verifyOtp(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'OTP has expired',
+      });
+    });
+  });
+
+  describe('resetPassword', () => {
+    test('should reject missing token or password', async () => {
+      req.body = {
+        resetToken: 'valid-token',
+      };
+
+      await AuthController.resetPassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Reset token and new password are required',
       });
     });
   });

@@ -10,8 +10,8 @@ describe('Product Controller', () => {
         name: 'Test Product',
         sku: 'TEST-001',
         category: 'Electronics',
-        price: 99.99,
-        quantity: 100,
+        sellingPrice: 99.99,
+        onHand: 100,
       };
 
       const result = productValidator.validateCreate(validProduct);
@@ -35,13 +35,13 @@ describe('Product Controller', () => {
         name: 'Test Product',
         sku: 'TEST-001',
         category: 'Electronics',
-        price: -10, // Invalid negative price
-        quantity: 100,
+        sellingPrice: -10, // Invalid negative price
+        onHand: 100,
       };
 
       const result = productValidator.validateCreate(invalidProduct);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Price must be a positive number');
+      expect(result.errors).toContain('Selling price cannot be negative');
     });
 
     test('should reject invalid quantity', () => {
@@ -49,13 +49,13 @@ describe('Product Controller', () => {
         name: 'Test Product',
         sku: 'TEST-001',
         category: 'Electronics',
-        price: 99.99,
-        quantity: -5, // Invalid negative quantity
+        sellingPrice: 99.99,
+        onHand: -5, // Invalid negative quantity
       };
 
       const result = productValidator.validateCreate(invalidProduct);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Quantity must be a non-negative number');
+      expect(result.errors).toContain('On hand quantity cannot be negative');
     });
 
     test('should reject empty name', () => {
@@ -63,8 +63,8 @@ describe('Product Controller', () => {
         name: '',
         sku: 'TEST-001',
         category: 'Electronics',
-        price: 99.99,
-        quantity: 100,
+        sellingPrice: 99.99,
+        onHand: 100,
       };
 
       const result = productValidator.validateCreate(invalidProduct);
@@ -77,20 +77,20 @@ describe('Product Controller', () => {
         name: 'Test Product',
         sku: '',
         category: 'Electronics',
-        price: 99.99,
-        quantity: 100,
+        sellingPrice: 99.99,
+        onHand: 100,
       };
 
       const result = productValidator.validateCreate(invalidProduct);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('SKU is required');
+      expect(result.errors).toContain('SKU is required and must be a non-empty string');
     });
   });
 
   describe('Product Update Validation', () => {
     test('should allow partial updates', () => {
       const partialUpdate = {
-        price: 149.99,
+        sellingPrice: 149.99,
       };
 
       const result = productValidator.validateUpdate(partialUpdate);
@@ -100,12 +100,12 @@ describe('Product Controller', () => {
 
     test('should reject invalid price in update', () => {
       const invalidUpdate = {
-        price: -50,
+        sellingPrice: -50,
       };
 
       const result = productValidator.validateUpdate(invalidUpdate);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Price must be a positive number');
+      expect(result.errors).toContain('Selling price cannot be negative');
     });
 
     test('should reject empty name in update', () => {
@@ -115,6 +115,7 @@ describe('Product Controller', () => {
 
       const result = productValidator.validateUpdate(invalidUpdate);
       expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Product name cannot be empty');
     });
   });
 });
