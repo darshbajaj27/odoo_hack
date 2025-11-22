@@ -53,6 +53,17 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     { label: "Adjust Stock", action: () => onNavigate("products") },
   ]
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-md">
+          <p className="text-sm font-medium text-gray-900">{`Moves: ${payload[0].value}`}</p>
+        </div>
+      )
+    }
+    return null
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Welcome Section */}
@@ -110,7 +121,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
               <CartesianGrid strokeDasharray="0" stroke="#e5e7eb" opacity={0} />
               <XAxis dataKey="week" stroke="#6b7280" />
               <YAxis stroke="#6b7280" />
-              <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e5e7eb" }} />
+              <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="moves" fill="#714B67" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
