@@ -53,12 +53,23 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     { label: "Adjust Stock", action: () => onNavigate("products") },
   ]
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-md">
+          <p className="text-sm font-medium text-gray-900">{`Moves: ${payload[0].value}`}</p>
+        </div>
+      )
+    }
+    return null
+  }
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight text-balance">Good Morning</h1>
-        <p className="text-gray-600 mt-2">Welcome to your inventory dashboard</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight text-balance">Good Morning</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Welcome to your inventory dashboard</p>
       </div>
 
       {/* KPI Cards */}
@@ -68,7 +79,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           return (
             <div
               key={idx}
-              className={`${kpi.color} bg-opacity-10 rounded-lg p-6 border border-current border-opacity-20 shadow-sm hover:shadow-md transition-shadow`}
+              className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-lg ${kpi.color}`}>
@@ -76,17 +87,17 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 </div>
                 {kpi.trend && <span className="text-sm font-semibold text-emerald-600">{kpi.trend}</span>}
               </div>
-              <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{kpi.value}</p>
-              {kpi.subtext && <p className="text-xs text-gray-500 mt-2">{kpi.subtext}</p>}
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{kpi.title}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2">{kpi.value}</p>
+              {kpi.subtext && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{kpi.subtext}</p>}
             </div>
           )
         })}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="flex flex-col sm:flex-row gap-3">
           {quickActions.map((action, idx) => (
             <button
@@ -103,22 +114,22 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Stock Moves per Week</h2>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Stock Moves per Week</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="0" stroke="#e5e7eb" opacity={0} />
               <XAxis dataKey="week" stroke="#6b7280" />
               <YAxis stroke="#6b7280" />
-              <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e5e7eb" }} />
+              <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="moves" fill="#714B67" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {[
               { action: "Receipt Validated", time: "2 hours ago", icon: Truck },
@@ -127,13 +138,13 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             ].map((activity, idx) => {
               const Icon = activity.icon
               return (
-                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-200 last:border-0">
-                  <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
+                <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-200 dark:border-slate-800 last:border-0">
+                  <div className="p-2 bg-gradient-to-br from-purple-100 dark:from-purple-900 to-purple-50 dark:to-slate-900 rounded-lg">
                     <Icon size={16} className="text-[#714B67]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.action}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                       <Clock size={12} />
                       {activity.time}
                     </p>

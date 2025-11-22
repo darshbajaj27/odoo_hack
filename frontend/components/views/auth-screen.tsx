@@ -35,11 +35,11 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
-          <h1 className="text-3xl font-bold text-center text-gray-900 mb-8 tracking-tight">StockMaster</h1>
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-8 border border-gray-200 dark:border-slate-800">
+          <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8 tracking-tight">StockMaster</h1>
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-8 border-b border-gray-200">
+          <div className="flex gap-4 mb-8 border-b border-gray-200 dark:border-slate-800">
             <button
               onClick={() => setTab("login")}
               className={`flex-1 py-3 font-semibold transition-colors border-b-2 ${
@@ -65,7 +65,7 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Email Address
               </label>
               <input
@@ -74,13 +74,13 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:[border-color:#714B67] focus:ring-2 focus:[ring-color:#714B67] focus:ring-opacity-20 outline-none transition-all"
+                className="w-full h-11 px-4 border border-gray-300 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:[border-color:#714B67] focus:ring-2 focus:[ring-color:#714B67] focus:ring-opacity-20 outline-none transition-all"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -90,13 +90,13 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:[border-color:#714B67] focus:ring-2 focus:[ring-color:#714B67] focus:ring-opacity-20 outline-none transition-all"
+                  className="w-full h-11 px-4 border border-gray-300 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:[border-color:#714B67] focus:ring-2 focus:[ring-color:#714B67] focus:ring-opacity-20 outline-none transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "👁️" : "👁️‍🗨️"}
@@ -121,8 +121,8 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
           </form>
 
           {/* Demo Login */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">Demo credentials:</p>
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-3">Demo credentials:</p>
             <button
               onClick={() => {
                 setEmail("manager@stockmaster.com")
