@@ -50,9 +50,17 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
+
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`📊 API available at http://localhost:${PORT}/api`);
-});
+// ONLY start the server if this file is run directly (node server.js)
+// Do NOT start it if it's imported by a test
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Server running on port ${PORT}`);
+    logger.info(`📊 API available at http://localhost:${PORT}/api`);
+  });
+}
+
+module.exports = app; // Export app for testing

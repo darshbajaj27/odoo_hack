@@ -1,6 +1,9 @@
 // ============================================
 // backend/tests/integration/search.integration.test.js
 // ============================================
+const dbHelper = require('../helpers/dbHelper');
+const requestHelper = require('../helpers/requestHelper');
+
 describe('Search Integration Tests', () => {
   let userToken;
 

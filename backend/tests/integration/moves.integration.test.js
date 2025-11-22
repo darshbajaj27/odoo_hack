@@ -1,6 +1,12 @@
 // ============================================
 // backend/tests/integration/moves.integration.test.js
 // ============================================
+const request = require('supertest');
+const app = require('../../server');
+const dbHelper = require('../helpers/dbHelper'); // <--- ADD THIS LINE
+const requestHelper = require('../helpers/requestHelper'); // (Likely needed too)
+
+
 describe('Moves Integration Tests', () => {
   let userToken;
   let testUser;

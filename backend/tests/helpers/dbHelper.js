@@ -1,12 +1,24 @@
 // ============================================
 // backend/tests/helpers/dbHelper.js (COMPLETE)
 // ============================================
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma'); 
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient();
+
 
 const dbHelper = {
+
+    async cleanupAll() {
+    // Order matters for Foreign Keys!
+    await prisma.operationLine.deleteMany();
+    await prisma.stockItem.deleteMany();
+    await prisma.operation.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.location.deleteMany();
+    await prisma.warehouse.deleteMany();
+    await prisma.contact.deleteMany();
+    await prisma.user.deleteMany();
+  },
   /**
    * Create a test user
    */

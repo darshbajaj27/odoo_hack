@@ -1,6 +1,9 @@
 // ============================================
 // backend/tests/integration/settings.integration.test.js
 // ============================================
+const dbHelper = require('../helpers/dbHelper');
+const requestHelper = require('../helpers/requestHelper');
+
 describe('Settings Integration Tests', () => {
   let adminToken;
   let userToken;

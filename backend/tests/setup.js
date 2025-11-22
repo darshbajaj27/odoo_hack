@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { execSync } = require('child_process');
+require('dotenv').config();
 
 const prisma = new PrismaClient();
 

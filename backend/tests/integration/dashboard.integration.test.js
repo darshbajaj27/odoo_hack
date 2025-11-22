@@ -1,6 +1,9 @@
 // ============================================
 // backend/tests/integration/dashboard.integration.test.js
 // ============================================
+const dbHelper = require('../helpers/dbHelper');
+const requestHelper = require('../helpers/requestHelper');
+
 describe('Dashboard Integration Tests', () => {
   let userToken;
 

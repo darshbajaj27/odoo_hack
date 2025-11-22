@@ -3,12 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   
   // Test file patterns
-  testMatch: [
-    '**/__tests__/**/*.js',
-    '**/__tests__/**/*.test.js',
-    '**/?(*.)+(spec|test).js',
-    '**/tests/**/*.js',
-  ],
+  testMatch: ['**/tests/**/*.test.js'],
   
   // Setup and teardown
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
@@ -29,6 +24,7 @@ module.exports = {
     '!**/dist/**',
     '!**/.next/**',
   ],
+  setupFiles: ['dotenv/config'],
   
   // Coverage thresholds for StockMaster backend
   coverageThreshold: {

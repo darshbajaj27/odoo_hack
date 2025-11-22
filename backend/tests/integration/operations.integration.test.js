@@ -1,6 +1,9 @@
 // ============================================
 // backend/tests/integration/operations.integration.test.js
 // ============================================
+const dbHelper = require('../helpers/dbHelper');
+const requestHelper = require('../helpers/requestHelper');
+
 describe('Operations Integration Tests', () => {
   let adminToken;
   let userToken;
