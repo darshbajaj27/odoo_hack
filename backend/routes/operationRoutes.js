@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const OperationController = require('../controllers/operationController');
-const { authenticate } = require('../middleware/auth');
-const { validateOperation } = require('../middleware/validation');
+const operationController = require('../controllers/operationController');
 
-router.get('/', authenticate, OperationController.getAll);
-router.get('/:id', authenticate, OperationController.getById);
-router.post('/', authenticate, validateOperation('create'), OperationController.create);
-router.put('/:id', authenticate, validateOperation('update'), OperationController.update);
-router.patch('/:id/status', authenticate, validateOperation('updateStatus'), OperationController.updateStatus);
-router.delete('/:id', authenticate, OperationController.delete);
+router.get('/', operationController.getOperations);
+router.get('/:id', operationController.getOperationById);
+router.post('/', operationController.createOperation);
+router.put('/:id', operationController.updateOperationStatus);
+router.put('/:id/lines', operationController.updateOperationLines);
+router.delete('/:id', operationController.deleteOperation);
 
 module.exports = router;

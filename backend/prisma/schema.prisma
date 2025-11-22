@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,126 +7,197 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  password  String
-  firstName String
-  lastName  String
-  phone     String?
-  role      String     @default("USER") // ADMIN, MANAGER, USER
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+// --- ENUMS ---
 
-  operations Operation[]
+enum UserRole {
+  MANAGER
+  STAFF
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LocationType {
+  INTERNAL
+  VENDOR
+  CUSTOMER
+  INVENTORY_LOSS
+}
+
+enum OperationType {
+  RECEIPT
+  DELIVERY
+  INTERNAL
+  ADJUSTMENT
+}
+
+enum OperationStatus {
+  DRAFT
+  WAITING
+  READY
+  DONE
+  CANCELLED
+}
+
+enum ContactType {
+  VENDOR
+  CUSTOMER
+}
+
+// --- MODELS ---
+
+model User {
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  password   String
+  name       String
+  role       UserRole   @default(STAFF)
+  status     UserStatus @default(ACTIVE)
+  avatar     String?
+
+  // Password reset
+  otpSecret  String?
+  otpExpires DateTime?
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   @@map("users")
 }
 
-// Product model
-model Product {
-  id              String   @id @default(cuid())
-  name            String
-  sku             String   @unique
-  description     String?
-  category        String
-  price           Float
-  quantity        Int      @default(0)
-  reorderLevel    Int      @default(10)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  operations      Operation[]
-  locations       Location[]
-
-  @@index([category])
-  @@index([sku])
-  @@map("products")
-}
-
-// Warehouse model
 model Warehouse {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String
-  code      String   @unique
+  shortCode String   @unique // e.g., "SF"
   address   String
-  city      String
-  state     String
-  zipCode   String
-  country   String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   locations Location[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("warehouses")
 }
 
-// Location model (Aisle, Rack, Shelf)
 model Location {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @unique
-  warehouseId String
-  aisle       String?
-  rack        String?
-  shelf       String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                Int          @id @default(autoincrement())
+  name              String       // e.g., "WH/Stock", "Partner Locations/Vendors"
+  type              LocationType
+  
+  // Parent Warehouse (Optional because Vendor locations might not be in your warehouse)
+  parentWarehouseId Int?          
+  parentWarehouse   Warehouse?   @relation(fields: [parentWarehouseId], references: [id], onDelete: Cascade)
 
-  warehouse       Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  products        Product[]
-  fromOperations  Operation[] @relation("FromLocation")
-  toOperations    Operation[] @relation("ToLocation")
+  // RELATIONS
+  stockItems        StockItem[]  // Tracks what is inside this location
+  
+  sourceOperations      Operation[] @relation("SourceLocation")
+  destinationOperations Operation[] @relation("DestinationLocation")
 
-  @@index([warehouseId])
-  @@index([code])
-  @@map("locations")
-}
-
-// Operation model (Stock movements, transfers)
-model Operation {
-  id             String   @id @default(cuid())
-  productId      String
-  quantity       Int
-  type           String   // INBOUND, OUTBOUND, TRANSFER, ADJUSTMENT
-  status         String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
-  fromLocationId String?
-  toLocationId   String?
-  notes          String?
-  userId         String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  product      Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  fromLocation Location? @relation("FromLocation", fields: [fromLocationId], references: [id], onDelete: SetNull)
-  toLocation   Location? @relation("ToLocation", fields: [toLocationId], references: [id], onDelete: SetNull)
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([productId])
-  @@index([status])
-  @@index([type])
-  @@index([createdAt])
-  @@map("operations")
-}
-
-// Contact model
-model Contact {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?  @unique
-  phone     String?
-  company   String?
-  type      String   // SUPPLIER, CUSTOMER, LOGISTICS
-  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([type])
+  @@map("locations")
+}
+
+model Product {
+  id           Int     @id @default(autoincrement())
+  sku          String  @unique
+  name         String
+  category     String
+  
+  // "Cached" totals (calculated from StockItems) for fast Dashboard loading
+  onHand       Float   @default(0) 
+  freeToUse    Float   @default(0)
+  
+  costPrice    Float   @default(0)
+  sellingPrice Float   @default(0)
+
+  // RELATIONS
+  stockItems     StockItem[]     // Tracks where this product lives
+  operationLines OperationLine[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("products")
+}
+
+// This tracks exactly how much of Product X is at Location Y
+model StockItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Float   @default(0)
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  locationId Int
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Ensures you can't have two rows for "Steel Rod" at "Shelf A". 
+  // Instead, you update the quantity of the single row.
+  @@unique([productId, locationId]) 
+  @@map("stock_items")
+}
+
+model Contact {
+  id        Int         @id @default(autoincrement())
+  name      String
+  type      ContactType
+  email     String?
+
+  operations Operation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("contacts")
+}
+
+// The "Double-Entry Ledger"
+model Operation {
+  id             String          @id // Manual ID like "WH/IN/0001"
+  ref            String?         // External Ref like "PO/001"
+  type           OperationType
+  status         OperationStatus @default(DRAFT)
+  scheduledDate  DateTime
+  
+  contactId      Int?
+  contact        Contact?        @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  sourceLocationId      Int
+  sourceLocation        Location @relation("SourceLocation", fields: [sourceLocationId], references: [id], onDelete: Restrict)
+
+  destinationLocationId Int
+  destinationLocation   Location @relation("DestinationLocation", fields: [destinationLocationId], references: [id], onDelete: Restrict)
+
+  lines          OperationLine[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("operations")
+}
+
+model OperationLine {
+  id          Int       @id @default(autoincrement())
+  
+  operationId String
+  operation   Operation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  productId   Int
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  demandQty   Float
+  doneQty     Float     @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("operation_lines")
 }

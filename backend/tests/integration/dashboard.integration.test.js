@@ -1,13 +1,66 @@
+// ============================================
+// backend/tests/integration/dashboard.integration.test.js
+// ============================================
 describe('Dashboard Integration Tests', () => {
-  test('GET /api/dashboard/stats should return statistics', () => {
-    // TODO: Implement stats integration test
+  let userToken;
+
+  beforeAll(async () => {
+    await dbHelper.cleanupAll();
+    const user = await dbHelper.createTestUser();
+    userToken = requestHelper.generateToken(user.id, user.email, 'USER');
+
+    // Create test data
+    await dbHelper.createTestProducts(5);
+    await dbHelper.createTestWarehouse();
   });
 
-  test('GET /api/dashboard/charts should return chart data', () => {
-    // TODO: Implement charts integration test
+  afterAll(async () => {
+    await dbHelper.cleanupAll();
+    await dbHelper.disconnect();
   });
 
-  test('GET /api/dashboard/recent-activity should return recent operations', () => {
-    // TODO: Implement recent activity integration test
+  describe('GET /api/dashboard/stats', () => {
+    test('should return statistics', async () => {
+      const response = await requestHelper.authGet(app, '/api/dashboard/stats', userToken);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('totalProducts');
+      expect(response.body).toHaveProperty('totalOperations');
+      expect(response.body).toHaveProperty('activeWarehouses');
+      expect(response.body).toHaveProperty('totalLocations');
+      expect(typeof response.body.totalProducts).toBe('number');
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app).get('/api/dashboard/stats');
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/dashboard/charts', () => {
+    test('should return chart data', async () => {
+      const response = await requestHelper.authGet(app, '/api/dashboard/charts', userToken);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('productsByCategory');
+      expect(response.body).toHaveProperty('operationsByType');
+      expect(response.body).toHaveProperty('stockTrends');
+    });
+  });
+
+  describe('GET /api/dashboard/recent-activity', () => {
+    test('should return recent operations', async () => {
+      const response = await requestHelper.authGet(
+        app,
+        '/api/dashboard/recent-activity',
+        userToken
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('recentOperations');
+      expect(response.body).toHaveProperty('timestamp');
+      expect(Array.isArray(response.body.recentOperations)).toBe(true);
+    });
   });
 });

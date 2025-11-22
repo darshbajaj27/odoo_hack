@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const MoveController = require('../controllers/moveController');
-const { authenticate } = require('../middleware/auth');
+const moveController = require('../controllers/moveController');
 
-router.get('/', authenticate, MoveController.getHistory);
-router.get('/stats', authenticate, MoveController.getStats);
+router.get('/', moveController.getMoves);
 
 module.exports = router;

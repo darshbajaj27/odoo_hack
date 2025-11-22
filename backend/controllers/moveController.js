@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
+const { parsePagination, getPaginationMeta } = require('../utils/helpers');
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,8 @@ class MoveController {
    */
   static async getHistory(req, res) {
     try {
-      const { page = 1, limit = 10, productId, type, startDate, endDate, status } = req.query;
+      const { productId, type, startDate, endDate, status } = req.query;
+      const { page, limit, skip } = parsePagination(req.query);
 
       const where = {};
       if (productId) where.productId = productId;
@@ -23,27 +25,46 @@ class MoveController {
         if (endDate) where.createdAt.lte = new Date(endDate);
       }
 
-      const moves = await prisma.operation.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: parseInt(limit),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          product: true,
-          fromLocation: true,
-          toLocation: true,
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
+      const [moves, total] = await Promise.all([
+        prisma.operation.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+              },
+            },
+            fromLocation: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            toLocation: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
           },
-        },
-      });
-
-      const total = await prisma.operation.count({ where });
+        }),
+        prisma.operation.count({ where }),
+      ]);
 
       // Flatten operations to move history format
       const moveHistory = moves.map((move) => ({
@@ -51,6 +72,7 @@ class MoveController {
         date: move.createdAt,
         product: move.product.name,
         productId: move.productId,
+        productSku: move.product.sku,
         quantity: move.quantity,
         type: move.type,
         fromLocation: move.fromLocation?.name || 'N/A',
@@ -62,12 +84,7 @@ class MoveController {
 
       res.json({
         moves: moveHistory,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit),
-        },
+        pagination: getPaginationMeta(total, page, limit),
       });
     } catch (error) {
       logger.error('Get move history error:', error);
@@ -81,16 +98,34 @@ class MoveController {
    */
   static async getStats(req, res) {
     try {
-      const totalMoves = await prisma.operation.count();
-      const movesByType = await prisma.operation.groupBy({
-        by: ['type'],
-        _count: true,
-      });
+      const [totalMoves, movesByType, movesByStatus, recentMoves] = await Promise.all([
+        prisma.operation.count(),
+        prisma.operation.groupBy({
+          by: ['type'],
+          _count: true,
+        }),
+        prisma.operation.groupBy({
+          by: ['status'],
+          _count: true,
+        }),
+        prisma.operation.count({
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+            },
+          },
+        }),
+      ]);
 
       res.json({
         totalMoves,
+        recentMoves,
         movesByType: movesByType.map((m) => ({
           type: m.type,
+          count: m._count,
+        })),
+        movesByStatus: movesByStatus.map((m) => ({
+          status: m.status,
           count: m._count,
         })),
       });
