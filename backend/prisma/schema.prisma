@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  role      String     @default("USER") // ADMIN, MANAGER, USER
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  operations Operation[]
+
+  @@map("users")
+}
+
+// Product model
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  sku             String   @unique
+  description     String?
+  category        String
+  price           Float
+  quantity        Int      @default(0)
+  reorderLevel    Int      @default(10)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  operations      Operation[]
+  locations       Location[]
+
+  @@index([category])
+  @@index([sku])
+  @@map("products")
+}
+
+// Warehouse model
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  locations Location[]
+
+  @@map("warehouses")
+}
+
+// Location model (Aisle, Rack, Shelf)
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  warehouseId String
+  aisle       String?
+  rack        String?
+  shelf       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  products        Product[]
+  fromOperations  Operation[] @relation("FromLocation")
+  toOperations    Operation[] @relation("ToLocation")
+
+  @@index([warehouseId])
+  @@index([code])
+  @@map("locations")
+}
+
+// Operation model (Stock movements, transfers)
+model Operation {
+  id             String   @id @default(cuid())
+  productId      String
+  quantity       Int
+  type           String   // INBOUND, OUTBOUND, TRANSFER, ADJUSTMENT
+  status         String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  fromLocationId String?
+  toLocationId   String?
+  notes          String?
+  userId         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product      Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fromLocation Location? @relation("FromLocation", fields: [fromLocationId], references: [id], onDelete: SetNull)
+  toLocation   Location? @relation("ToLocation", fields: [toLocationId], references: [id], onDelete: SetNull)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("operations")
+}
+
+// Contact model
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  company   String?
+  type      String   // SUPPLIER, CUSTOMER, LOGISTICS
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@map("contacts")
+}
