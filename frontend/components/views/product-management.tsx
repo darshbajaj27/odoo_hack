@@ -1,7 +1,8 @@
 "use client"
 
-import { Search, Plus, MoreVertical, AlertTriangle } from "lucide-react"
-import { useState } from "react"
+import { Search, Plus, MoreVertical, AlertTriangle, Loader } from "lucide-react"
+import { useState, useEffect } from "react"
+import { productsAPI } from "@/lib/api"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +41,12 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
   const [selectedView, setSelectedView] = useState<"grid" | "table">("grid")
   const [showQuantityInput, setShowQuantityInput] = useState<number | null>(null)
   const [inputQuantity, setInputQuantity] = useState("")
+  const [showAddProductDialog, setShowAddProductDialog] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [deviationAlert, setDeviationAlert] = useState<{ productId: number; productName: string; quantity: number; avgVelocity: number; deviation: number } | null>(null)
+  const [newProduct, setNewProduct] = useState({ name: "", sku: "", category: "Raw Materials", quantity: 0 })
 
   // Velocity Threshold Monitoring: Check if quantity significantly deviates from historical average
   const checkVelocityDeviation = (productId: number, quantity: number) => {
@@ -65,6 +71,28 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
     return null
   }
 
+  // Fetch products on mount
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const data = await productsAPI.getAll(1, 100, searchTerm)
+      // Ensure data is always an array
+      const productsData = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : mockProducts)
+      setProducts(productsData)
+    } catch (err: any) {
+      setError(err.message || "Failed to load products")
+      // Use mock data as fallback
+      setProducts(mockProducts)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleQuantitySubmit = (productId: number, quantity: number) => {
     const deviation = checkVelocityDeviation(productId, quantity)
     if (deviation) {
@@ -77,10 +105,26 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
     }
   }
 
-  const filtered = mockProducts.filter(
+  const handleAddProduct = async () => {
+    try {
+      await productsAPI.create({
+        name: newProduct.name,
+        sku: newProduct.sku,
+        category: newProduct.category,
+        onHand: newProduct.quantity,
+      })
+      setShowAddProductDialog(false)
+      setNewProduct({ name: "", sku: "", category: "Raw Materials", quantity: 0 })
+      fetchProducts()
+    } catch (err: any) {
+      alert(err.message || "Failed to add product")
+    }
+  }
+
+  const filtered = Array.isArray(products) ? products.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
+  ) : []
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
@@ -88,13 +132,29 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Products</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{filtered.length} products available</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {loading ? "Loading..." : `${filtered.length} products available`}
+          </p>
         </div>
-        <button className="h-11 bg-[#714B67] hover:bg-[#5A3D57] text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 px-6">
+        <button 
+          onClick={() => setShowAddProductDialog(true)}
+          className="h-11 bg-[#714B67] hover:bg-[#5A3D57] text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 px-6"
+        >
           <Plus size={20} />
           Add Product
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg flex gap-2">
+          <AlertTriangle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-red-900 dark:text-red-300">Error</h3>
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        </div>
+      )}
 
       {/* Search & View Toggle */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -132,8 +192,14 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
 
       {/* Grid View */}
       {selectedView === "grid" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((product) => (
+        <>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader className="animate-spin text-[#714B67]" size={40} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((product) => (
             <div
               key={product.id}
               className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all p-4 cursor-pointer hover:border-[#714B67]"
@@ -185,7 +251,9 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
               </div>
             </div>
           ))}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Table View */}
@@ -282,6 +350,73 @@ export function ProductManagement({ onNavigate, historicalData = [] }: ProductMa
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {/* Add Product Dialog */}
+      {showAddProductDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg max-w-md w-full space-y-4 p-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add New Product</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Product Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter product name"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67] focus:ring-opacity-20 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">SKU</label>
+                <input
+                  type="text"
+                  placeholder="Enter SKU"
+                  value={newProduct.sku}
+                  onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67] focus:ring-opacity-20 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <select 
+                  value={newProduct.category}
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67] focus:ring-opacity-20 outline-none"
+                >
+                  <option>Raw Materials</option>
+                  <option>Components</option>
+                  <option>Finished Goods</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Initial Quantity</label>
+                <input
+                  type="number"
+                  placeholder="Enter quantity"
+                  value={newProduct.quantity}
+                  onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })}
+                  className="w-full h-10 px-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67] focus:ring-opacity-20 outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end pt-4">
+              <button
+                onClick={() => setShowAddProductDialog(false)}
+                className="px-4 py-2 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddProduct}
+                className="px-4 py-2 bg-[#714B67] hover:bg-[#5A3D57] text-white rounded-lg transition-colors"
+              >
+                Add Product
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

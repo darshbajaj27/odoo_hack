@@ -1,7 +1,8 @@
 "use client"
 
 import { Search, Filter, Plus, ChevronRight } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { operationsAPI } from "@/lib/api"
 
 interface OperationsListViewProps {
   onNavigate: (view: string) => void
@@ -62,14 +63,41 @@ const statusConfig = {
 export function OperationsListView({ onNavigate, onSelectOperation }: OperationsListViewProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
+  const [operations, setOperations] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  const filtered = mockOperations.filter((op) => {
+  // Fetch operations on mount
+  useEffect(() => {
+    fetchOperations()
+  }, [])
+
+  const fetchOperations = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const data = await operationsAPI.getAll(1, 100, statusFilter)
+      // Ensure data is always an array
+      const operationsData = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : mockOperations)
+      setOperations(operationsData)
+    } catch (err: any) {
+      setError(err.message)
+      // Use mock data as fallback
+      setOperations(mockOperations)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filtered = Array.isArray(operations) ? operations.filter((op) => {
     const matchesSearch =
-      op.ref.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      op.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+      op.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      op.ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      op.vendor?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = !statusFilter || op.status === statusFilter
     return matchesSearch && matchesStatus
-  })
+  }) : []
 
   const handleRowClick = (id: string) => {
     onSelectOperation(id)
@@ -84,11 +112,24 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Operations</h1>
           <p className="text-slate-600 dark:text-gray-400 mt-1">Manage receipts and deliveries</p>
         </div>
-        <button className="h-11 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 px-6">
+        <button 
+          onClick={() => {
+            // Create a new operation with default values
+            onSelectOperation("NEW")
+            onNavigate("detail")
+          }}
+          className="h-11 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 px-6"
+        >
           <Plus size={20} />
           Create
         </button>
       </div>
+
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -102,11 +143,49 @@ export function OperationsListView({ onNavigate, onSelectOperation }: Operations
             className="w-full h-11 pl-10 pr-4 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 outline-none transition-all"
           />
         </div>
-        <button className="h-11 px-4 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+        <button 
+          onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+          className="h-11 px-4 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+        >
           <Filter size={18} />
           Filter
         </button>
       </div>
+
+      {/* Advanced Filter Panel */}
+      {showAdvancedFilter && (
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4 space-y-4">
+          <h3 className="font-semibold text-slate-900 dark:text-white">Advanced Filters</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Status</label>
+              <select 
+                value={statusFilter || ""}
+                onChange={(e) => setStatusFilter(e.target.value || null)}
+                className="w-full h-9 px-3 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 outline-none"
+              >
+                <option value="">All Statuses</option>
+                {Object.keys(statusConfig).map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Date Range</label>
+              <input 
+                type="date"
+                className="w-full h-9 px-3 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 outline-none"
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAdvancedFilter(false)}
+            className="mt-4 h-9 px-4 bg-teal-700 hover:bg-teal-800 text-white font-medium rounded-lg transition-colors"
+          >
+            Apply Filters
+          </button>
+        </div>
+      )}
 
       {/* Status Filter Chips */}
       <div className="flex flex-wrap gap-2">

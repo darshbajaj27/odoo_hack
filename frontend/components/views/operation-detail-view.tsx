@@ -23,6 +23,10 @@ export function OperationDetailView({ operationId, onNavigate }: OperationDetail
     setProducts(products.map((p) => (p.id === id ? { ...p, doneQty: newDoneQty } : p)))
   }
 
+  const handlePrint = () => {
+    window.print()
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-white dark:bg-slate-950 text-gray-900 dark:text-white min-h-screen">
       {/* Breadcrumb & Header */}
@@ -62,12 +66,17 @@ export function OperationDetailView({ operationId, onNavigate }: OperationDetail
                   <Check size={20} />
                   Validate
                 </button>
-                <button className="flex-1 h-11 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                <button 
+                  onClick={handlePrint}
+                  className="flex-1 h-11 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
                   <Printer size={20} />
                   Print
                 </button>
                 <button
-                  onClick={() => setStatus("Cancelled")}
+                  onClick={() => {
+                    setStatus("Cancelled")
+                  }}
                   className="h-11 px-6 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <X size={20} />

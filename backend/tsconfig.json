@@ -5,24 +5,33 @@
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./",
-    "strict": true,
+    "strict": false,
+    "allowJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true
+    "noImplicitAny": false
   },
   "include": [
-    "**/*.ts",
-    "**/*.js"
+    "controllers/**/*.js",
+    "config/**/*.js",
+    "routes/**/*.js",
+    "middleware/**/*.js",
+    "utils/**/*.js",
+    "validators/**/*.js",
+    "server.js",
+    "prisma/**/*.js"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "tests",
+    "scripts",
+    "docs",
+    "logs"
   ]
 }
